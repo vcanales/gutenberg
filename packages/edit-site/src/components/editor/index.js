@@ -175,6 +175,9 @@ function Editor() {
 										baseStyles={
 											settings.__experimentalGlobalStylesBaseStyles
 										}
+										stylesheetId={
+											settings.__experimentalGlobalStylesEmbeddedId
+										}
 									>
 										<KeyboardShortcuts.Register />
 										<SidebarComplementaryAreaFills />
