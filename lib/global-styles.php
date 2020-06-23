@@ -101,14 +101,9 @@ function gutenberg_experimental_global_styles_get_from_file( $file_path ) {
  *
  * @return array Config that adheres to the theme.json schema.
  */
-function gutenberg_experimental_global_styles_get_user( $include_draft = false ) {
-	$config             = array();
-	$post_status_filter = array( 'publish' );
-	if ( $include_draft ) {
-		$post_status_filter[] = 'draft';
-	}
-
-	$user_cpt = gutenberg_experimental_global_styles_get_user_cpt( $post_status_filter );
+function gutenberg_experimental_global_styles_get_user() {
+	$config   = array();
+	$user_cpt = gutenberg_experimental_global_styles_get_user_cpt();
 	if ( array_key_exists( 'post_content', $user_cpt ) ) {
 		$decoded_data = json_decode( $user_cpt['post_content'], true );
 
@@ -132,13 +127,13 @@ function gutenberg_experimental_global_styles_get_user( $include_draft = false )
  *
  * It can also create and return a new draft CPT.
  *
+ * @param bool  $should_create_cpt Whether a new CPT should be created if no one was found.
+ *                                   False by default.
  * @param array $post_status_filter  Filter CPT by post status.
  *                                   ['publish'] by default, so it only fetches published posts.
- * @param bool  $should_create_draft Whether a new draft should be created if no CPT was found.
- *                                   False by default.
  * @return array Custom Post Type for the user's origin config.
  */
-function gutenberg_experimental_global_styles_get_user_cpt( $post_status_filter = array( 'publish' ), $should_create_draft = false ) {
+function gutenberg_experimental_global_styles_get_user_cpt( $should_create_cpt = false, $post_status_filter = array( 'publish' ) ) {
 	$user_cpt         = array();
 	$post_type_filter = 'wp_global_styles';
 	$post_name_filter = 'wp-global-styles-' . strtolower( wp_get_theme()->get( 'TextDomain' ) );
@@ -155,11 +150,11 @@ function gutenberg_experimental_global_styles_get_user_cpt( $post_status_filter 
 
 	if ( is_array( $recent_posts ) && ( count( $recent_posts ) === 1 ) ) {
 		$user_cpt = $recent_posts[0];
-	} elseif ( $should_create_draft ) {
+	} elseif ( $should_create_cpt ) {
 		$cpt_post_id = wp_insert_post(
 			array(
 				'post_content' => '{}',
-				'post_status'  => 'draft',
+				'post_status'  => 'publish',
 				'post_type'    => $post_type_filter,
 				'post_name'    => $post_name_filter,
 			),
@@ -178,7 +173,7 @@ function gutenberg_experimental_global_styles_get_user_cpt( $post_status_filter 
  */
 function gutenberg_experimental_global_styles_get_user_cpt_id() {
 	$user_cpt_id = null;
-	$user_cpt    = gutenberg_experimental_global_styles_get_user_cpt( array( 'publish', 'draft' ), true );
+	$user_cpt    = gutenberg_experimental_global_styles_get_user_cpt( true );
 	if ( array_key_exists( 'ID', $user_cpt ) ) {
 		$user_cpt_id = $user_cpt['ID'];
 	}
@@ -545,15 +540,13 @@ function gutenberg_experimental_global_styles_normalize_schema( $tree ) {
  * Returns the stylesheet resulting of merging
  * core's, theme's, and user's origins.
  *
- * @param boolean $include_draft Whether to include draft or only publish CPT for user styles.
- *
  * @return string
  */
-function gutenberg_experimental_global_styles_get_stylesheet( $include_draft = false ) {
+function gutenberg_experimental_global_styles_get_stylesheet() {
 	$gs_merged = array();
 	$gs_core   = gutenberg_experimental_global_styles_get_core();
 	$gs_theme  = gutenberg_experimental_global_styles_get_theme();
-	$gs_user   = gutenberg_experimental_global_styles_get_user( $include_draft );
+	$gs_user   = gutenberg_experimental_global_styles_get_user();
 
 	$gs_merged = gutenberg_experimental_global_styles_merge_trees( $gs_core, $gs_theme, $gs_user );
 
