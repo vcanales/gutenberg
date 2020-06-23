@@ -28,8 +28,20 @@ export default function TemplatePartEdit( {
 	// but wait until the third inner blocks change,
 	// because the first 2 are just the template part
 	// content loading.
-	const innerBlocks = useSelect(
-		( select ) => select( 'core/block-editor' ).getBlocks( clientId ),
+	const { innerBlocks, isSelected } = useSelect(
+		( select ) => {
+			const {
+				getBlocks,
+				hasSelectedInnerBlock,
+				isBlockSelected,
+			} = select( 'core/block-editor' );
+			return {
+				innerBlocks: getBlocks( clientId ),
+				isSelected:
+					hasSelectedInnerBlock( clientId, true ) ||
+					isBlockSelected( clientId ),
+			};
+		},
 		[ clientId ]
 	);
 	const { editEntityRecord } = useDispatch( 'core' );
@@ -54,13 +66,19 @@ export default function TemplatePartEdit( {
 	if ( postId ) {
 		// Part of a template file, post ID already resolved.
 		return (
-			<EntityProvider
-				kind="postType"
-				type="wp_template_part"
-				id={ postId }
+			<div
+				className={
+					isSelected ? 'wp-block-template-part__selected' : null
+				}
 			>
-				<TemplatePartInnerBlocks />
-			</EntityProvider>
+				<EntityProvider
+					kind="postType"
+					type="wp_template_part"
+					id={ postId }
+				>
+					<TemplatePartInnerBlocks />
+				</EntityProvider>
+			</div>
 		);
 	}
 	if ( ! initialSlug.current && ! initialTheme.current ) {
