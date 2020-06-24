@@ -28,7 +28,7 @@ import {
 	InspectorControls,
 	RichText,
 	__experimentalLinkControl as LinkControl,
-	__experimentalBlock as Block,
+	__experimentalUseBlockProps as useBlockProps,
 } from '@wordpress/block-editor';
 import { isURL, prependHTTP } from '@wordpress/url';
 import { Fragment, useState, useEffect, useRef } from '@wordpress/element';
@@ -198,21 +198,23 @@ function NavigationLinkEdit( {
 					/>
 				</PanelBody>
 			</InspectorControls>
-			<Block.li
-				className={ classnames( {
-					'is-editing': isSelected || isParentOfSelectedBlock,
-					'is-selected': isSelected,
-					'has-link': !! url,
-					'has-child': hasDescendants,
-					'has-text-color': rgbTextColor,
-					[ `has-${ textColor }-color` ]: !! textColor,
-					'has-background': rgbBackgroundColor,
-					[ `has-${ backgroundColor }-background-color` ]: !! backgroundColor,
+			<li
+				{ ...useBlockProps( {
+					className: classnames( {
+						'is-editing': isSelected || isParentOfSelectedBlock,
+						'is-selected': isSelected,
+						'has-link': !! url,
+						'has-child': hasDescendants,
+						'has-text-color': rgbTextColor,
+						[ `has-${ textColor }-color` ]: !! textColor,
+						'has-background': rgbBackgroundColor,
+						[ `has-${ backgroundColor }-background-color` ]: !! backgroundColor,
+					} ),
+					style: {
+						color: rgbTextColor,
+						backgroundColor: rgbBackgroundColor,
+					},
 				} ) }
-				style={ {
-					color: rgbTextColor,
-					backgroundColor: rgbBackgroundColor,
-				} }
 			>
 				<div className="wp-block-navigation-link__content">
 					<RichText
@@ -317,7 +319,7 @@ function NavigationLinkEdit( {
 						),
 					} }
 				/>
-			</Block.li>
+			</li>
 		</Fragment>
 	);
 }
