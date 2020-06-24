@@ -172,6 +172,9 @@ function Editor() {
 										entityId={
 											settings.__experimentalGlobalStylesUserEntityId
 										}
+										globalContext={
+											settings.__experimentalGlobalStylesGlobalContext
+										}
 									>
 										<KeyboardShortcuts.Register />
 										<SidebarComplementaryAreaFills />
