@@ -1,14 +1,9 @@
 /**
- * External dependencies
- */
-import classnames from 'classnames';
-
-/**
  * WordPress dependencies
  */
+import { ToolbarGroup } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
 import { useRef } from '@wordpress/element';
-import { useViewportMatch } from '@wordpress/compose';
 import { getBlockType, hasBlockSupport } from '@wordpress/blocks';
 
 /**
@@ -21,7 +16,7 @@ import BlockControls from '../block-controls';
 import BlockFormatControls from '../block-format-controls';
 import BlockSettingsMenu from '../block-settings-menu';
 import BlockDraggable from '../block-draggable';
-import { useShowMoversGestures, useToggleBlockHighlight } from './utils';
+import { useElementHoverFocusGestures, useToggleBlockHighlight } from './utils';
 import ExpandedBlockControlsContainer from './expanded-block-controls-container';
 
 export default function BlockToolbar( {
@@ -32,17 +27,17 @@ export default function BlockToolbar( {
 		blockClientIds,
 		blockClientId,
 		blockType,
-		hasFixedToolbar,
+		hasParent,
 		isValid,
 		isVisual,
 	} = useSelect( ( select ) => {
 		const {
 			getBlockName,
 			getBlockMode,
+			getBlockParents,
 			getSelectedBlockClientIds,
 			isBlockValid,
 			getBlockRootClientId,
-			getSettings,
 		} = select( 'core/block-editor' );
 		const selectedBlockClientIds = getSelectedBlockClientIds();
 		const selectedBlockClientId = selectedBlockClientIds[ 0 ];
@@ -54,8 +49,8 @@ export default function BlockToolbar( {
 			blockType:
 				selectedBlockClientId &&
 				getBlockType( getBlockName( selectedBlockClientId ) ),
-			hasFixedToolbar: getSettings().hasFixedToolbar,
 			rootClientId: blockRootClientId,
+			hasParent: getBlockParents( selectedBlockClientId ).length > 0,
 			isValid: selectedBlockClientIds.every( ( id ) =>
 				isBlockValid( id )
 			),
@@ -68,23 +63,16 @@ export default function BlockToolbar( {
 	const toggleBlockHighlight = useToggleBlockHighlight( blockClientId );
 	const nodeRef = useRef();
 
-	const { showMovers, gestures: showMoversGestures } = useShowMoversGestures(
-		{
-			ref: nodeRef,
-			onChange: toggleBlockHighlight,
-		}
-	);
-
-	const displayHeaderToolbar =
-		useViewportMatch( 'medium', '<' ) || hasFixedToolbar;
+	const showBlockHighlightGestures = useElementHoverFocusGestures( {
+		ref: nodeRef,
+		onChange: toggleBlockHighlight,
+	} );
 
 	if ( blockType ) {
 		if ( ! hasBlockSupport( blockType, '__experimentalToolbar', true ) ) {
 			return null;
 		}
 	}
-
-	const shouldShowMovers = displayHeaderToolbar || showMovers;
 
 	if ( blockClientIds.length === 0 ) {
 		return null;
@@ -93,27 +81,21 @@ export default function BlockToolbar( {
 	const shouldShowVisualToolbar = isValid && isVisual;
 	const isMultiToolbar = blockClientIds.length > 1;
 
-	const classes = classnames(
-		'block-editor-block-toolbar',
-		shouldShowMovers && 'is-showing-movers'
-	);
-
 	const Wrapper = __experimentalExpandedControl
 		? ExpandedBlockControlsContainer
 		: 'div';
 
 	return (
-		<Wrapper className={ classes }>
+		<Wrapper className="block-editor-block-toolbar">
+			{ hasParent && ! isMultiToolbar && (
+				<ToolbarGroup className="block-editor-block-toolbar__block-parent-selector-wrapper">
+					<BlockParentSelector clientIds={ blockClientIds } />
+				</ToolbarGroup>
+			) }
 			<div
 				className="block-editor-block-toolbar__mover-switcher-container"
 				ref={ nodeRef }
 			>
-				{ ! isMultiToolbar && (
-					<div className="block-editor-block-toolbar__block-parent-selector-wrapper">
-						<BlockParentSelector clientIds={ blockClientIds } />
-					</div>
-				) }
-
 				{ ( shouldShowVisualToolbar || isMultiToolbar ) && (
 					<BlockDraggable
 						clientIds={ blockClientIds }
@@ -125,7 +107,7 @@ export default function BlockToolbar( {
 							onDraggableEnd,
 						} ) => (
 							<div
-								{ ...showMoversGestures }
+								{ ...showBlockHighlightGestures }
 								className="block-editor-block-toolbar__block-switcher-wrapper"
 								draggable={ isDraggable && ! hideDragHandle }
 								onDragStart={ onDraggableStart }
