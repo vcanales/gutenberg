@@ -2,15 +2,15 @@
  * WordPress dependencies
  */
 import { __unstableUseDropZone as useDropZone } from '@wordpress/components';
-import {
-	pasteHandler,
-	getBlockTransforms,
-	findTransform,
-} from '@wordpress/blocks';
-import { useDispatch, useSelect } from '@wordpress/data';
-import { useEffect, useCallback, useState } from '@wordpress/element';
+import { useSelect } from '@wordpress/data';
+import { useEffect, useState } from '@wordpress/element';
 
-/** @typedef {import('@wordpress/element').WPSyntheticEvent} WPSyntheticEvent */
+/**
+ * Internal dependencies
+ */
+import useOnFileDrop from './use-on-file-drop';
+import useOnHTMLDrop from './use-on-html-drop';
+import useOnBlockDrop from './use-on-block-drop';
 
 /**
  * @typedef  {Object} WPBlockDragPosition
@@ -173,142 +173,30 @@ export default function useBlockDropZone( {
 	element,
 	rootClientId: targetRootClientId,
 } ) {
-	const [ targetBlockIndex, setTargetBlockIndex ] = useState( null );
-
-	const {
-		getClientIdsOfDescendants,
-		getBlockIndex,
-		hasUploadPermissions,
-		isLockedAll,
-		orientation,
-	} = useSelect(
-		( select ) => {
-			const {
-				getBlockListSettings,
-				getClientIdsOfDescendants: _getClientIdsOfDescendants,
-				getBlockIndex: _getBlockIndex,
-				getSettings,
-				getTemplateLock,
-			} = select( 'core/block-editor' );
-			return {
-				orientation: getBlockListSettings( targetRootClientId )
-					?.orientation,
-				getClientIdsOfDescendants: _getClientIdsOfDescendants,
-				getBlockIndex: _getBlockIndex,
-				hasUploadPermissions: !! getSettings().mediaUpload,
-				isLockedAll: getTemplateLock( targetRootClientId ) === 'all',
-			};
-		},
-		[ targetRootClientId ]
-	);
-	const {
-		insertBlocks,
-		updateBlockAttributes,
-		moveBlocksToPosition,
-	} = useDispatch( 'core/block-editor' );
-
-	const onFilesDrop = useCallback(
-		( files ) => {
-			if ( ! hasUploadPermissions ) {
-				return;
-			}
-
-			const transformation = findTransform(
-				getBlockTransforms( 'from' ),
-				( transform ) =>
-					transform.type === 'files' && transform.isMatch( files )
-			);
-
-			if ( transformation ) {
-				const blocks = transformation.transform(
-					files,
-					updateBlockAttributes
-				);
-				insertBlocks( blocks, targetBlockIndex, targetRootClientId );
-			}
-		},
-		[
-			hasUploadPermissions,
-			updateBlockAttributes,
-			insertBlocks,
-			targetBlockIndex,
-			targetRootClientId,
-		]
-	);
-
-	const onHTMLDrop = useCallback(
-		( HTML ) => {
-			const blocks = pasteHandler( { HTML, mode: 'BLOCKS' } );
-
-			if ( blocks.length ) {
-				insertBlocks( blocks, targetBlockIndex, targetRootClientId );
-			}
-		},
-		[ insertBlocks, targetBlockIndex, targetRootClientId ]
-	);
-
-	const onDrop = useCallback(
-		( event ) => {
-			const {
-				srcRootClientId: sourceRootClientId,
-				srcClientIds: sourceClientIds,
-				type: dropType,
-			} = parseDropEvent( event );
-
-			// If the user isn't dropping a block, return early.
-			if ( dropType !== 'block' ) {
-				return;
-			}
-
-			const sourceBlockIndex = getBlockIndex( sourceClientIds[ 0 ] );
-
-			// If the user is dropping to the same position, return early.
-			if (
-				sourceRootClientId === targetRootClientId &&
-				sourceBlockIndex === targetBlockIndex
-			) {
-				return;
-			}
-
-			// If the user is attempting to drop a block within its own
-			// nested blocks, return early as this would create infinite
-			// recursion.
-			if (
-				sourceClientIds.includes( targetRootClientId ) ||
-				getClientIdsOfDescendants( sourceClientIds ).some(
-					( id ) => id === targetRootClientId
-				)
-			) {
-				return;
-			}
-
-			const isAtSameLevel =
-				sourceRootClientId === targetRootClientId ||
-				( sourceRootClientId === '' &&
-					targetRootClientId === undefined );
-
-			// If the block is kept at the same level and moved downwards,
-			// subtract to account for blocks shifting upward to occupy its old position.
-			const insertIndex =
-				isAtSameLevel && sourceBlockIndex < targetBlockIndex
-					? targetBlockIndex - 1
-					: targetBlockIndex;
-
-			moveBlocksToPosition(
-				sourceClientIds,
-				sourceRootClientId,
-				targetRootClientId,
-				insertIndex
-			);
-		},
-		[
+	function selector( select ) {
+		const {
+			getBlockListSettings,
 			getClientIdsOfDescendants,
-			getBlockIndex,
-			targetBlockIndex,
-			moveBlocksToPosition,
-			targetRootClientId,
-		]
-	);
+			getSettings,
+			getTemplateLock,
+		} = select( 'core/block-editor' );
+		return {
+			orientation: getBlockListSettings( targetRootClientId )
+				?.orientation,
+			getClientIdsOfDescendants,
+			hasUploadPermissions: !! getSettings().mediaUpload,
+			isLockedAll: getTemplateLock( targetRootClientId ) === 'all',
+		};
+	}
+
+	const { isLockedAll, orientation } = useSelect( selector, [
+		targetRootClientId,
+	] );
+
+	const [ targetBlockIndex, setTargetBlockIndex ] = useState( null );
+	const onFilesDrop = useOnFileDrop( targetRootClientId, targetBlockIndex );
+	const onHTMLDrop = useOnHTMLDrop( targetRootClientId, targetBlockIndex );
+	const onDrop = useOnBlockDrop( targetRootClientId, targetBlockIndex );
 
 	const { position } = useDropZone( {
 		element,
