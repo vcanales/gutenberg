@@ -763,3 +763,90 @@ export function __unstableStripHTML( html ) {
 	const document = new DOMParser().parseFromString( html, 'text/html' );
 	return document.body.textContent || '';
 }
+
+/**
+ * A string representing the name of an edge.
+ *
+ * @typedef {'top'|'right'|'bottom'|'left'} WPEdgeName
+ */
+
+/**
+ * @typedef  {Object} WPPoint
+ * @property {number} x The horizontal position.
+ * @property {number} y The vertical position.
+ */
+
+/**
+ * Given a point, a DOM Rect and the name of an edge, returns the distance to
+ * that edge of the rect.
+ *
+ * This function works for edges that are horizontal or vertical, the following
+ * terms are used so that the function works in both orientations:
+ *
+ * - Lateral, meaning the axis running horizontally when an edge is vertical
+ *   and vertically when an edge is horizontal.
+ * - Forward, meaning the axis running vertically when an edge is vertical
+ *   and horizontally when an edge is horizontal.
+ *
+ * @param {WPPoint}    point The point to measure distance from.
+ * @param {DOMRect}    rect  A DOM Rect containing edge positions.
+ * @param {WPEdgeName} edge  The edge to measure to.
+ */
+export function getDistanceFromPointToEdge( point, rect, edge ) {
+	const isHorizontal = edge === 'left' || edge === 'right';
+	const { x, y } = point;
+	const pointLateralPosition = isHorizontal ? y : x;
+	const pointForwardPosition = isHorizontal ? x : y;
+	const edgeStart = isHorizontal ? rect.top : rect.left;
+	const edgeEnd = isHorizontal ? rect.bottom : rect.right;
+	const edgeForwardPosition = rect[ edge ];
+
+	let edgeLateralPosition;
+	if (
+		pointLateralPosition >= edgeStart &&
+		pointLateralPosition <= edgeEnd
+	) {
+		edgeLateralPosition = pointLateralPosition;
+	} else if ( pointLateralPosition < edgeEnd ) {
+		edgeLateralPosition = edgeStart;
+	} else {
+		edgeLateralPosition = edgeEnd;
+	}
+
+	return Math.sqrt(
+		( pointLateralPosition - edgeLateralPosition ) ** 2 +
+			( pointForwardPosition - edgeForwardPosition ) ** 2
+	);
+}
+
+/**
+ * Given a point, a DOMRect and a list of allowed edges returns the name of and
+ * distance to the nearest edge.
+ *
+ * @param {WPPoint}      point        The point to measure distance from.
+ * @param {DOMRect}      rect         A DOM Rect containing edge positions.
+ * @param {WPEdgeName[]} allowedEdges A list of the edges included in the
+ *                                    calculation. Defaults to all edges.
+ *
+ * @return {[number, string]} An array where the first value is the distance
+ *                              and a second is the edge name.
+ */
+export function getDistanceToNearestEdge(
+	point,
+	rect,
+	allowedEdges = [ 'top', 'bottom', 'left', 'right' ]
+) {
+	let candidateDistance;
+	let candidateEdge;
+
+	allowedEdges.forEach( ( edge ) => {
+		const distance = getDistanceFromPointToEdge( point, rect, edge );
+
+		if ( candidateDistance === undefined || distance < candidateDistance ) {
+			candidateDistance = distance;
+			candidateEdge = edge;
+		}
+	} );
+
+	return [ candidateDistance, candidateEdge ];
+}

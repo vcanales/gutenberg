@@ -3,6 +3,7 @@
  */
 import { __unstableUseDropZone as useDropZone } from '@wordpress/components';
 import { useSelect } from '@wordpress/data';
+import { getDistanceToNearestEdge } from '@wordpress/dom';
 import { useEffect, useState } from '@wordpress/element';
 
 /**
@@ -12,11 +13,7 @@ import useOnFileDrop from './use-on-file-drop';
 import useOnHTMLDrop from './use-on-html-drop';
 import useOnBlockDrop from './use-on-block-drop';
 
-/**
- * @typedef  {Object} WPBlockDragPosition
- * @property {number} x The horizontal position of a the block being dragged.
- * @property {number} y The vertical position of the block being dragged.
- */
+/** @typedef {import('@wordpress/dom').WPPoint} WPPoint */
 
 /**
  * The orientation of a block list.
@@ -24,67 +21,12 @@ import useOnBlockDrop from './use-on-block-drop';
  * @typedef {'horizontal'|'vertical'|undefined} WPBlockListOrientation
  */
 
-function getDistanceFromPointToEdge( point, rect, edge ) {
-	const isHorizontal = edge === 'left' || edge === 'right';
-	const { x, y } = point;
-	const pointLateralPosition = isHorizontal ? y : x;
-	const pointForwardPosition = isHorizontal ? x : y;
-	const edgeLateralStart = isHorizontal ? rect.top : rect.left;
-	const edgeLateralEnd = isHorizontal ? rect.bottom : rect.right;
-	const edgeForwardPosition = rect[ edge ];
-
-	let edgeLateralPosition;
-	if (
-		pointLateralPosition >= edgeLateralStart &&
-		pointLateralPosition <= edgeLateralEnd
-	) {
-		edgeLateralPosition = pointLateralPosition;
-	} else if ( pointLateralPosition < edgeLateralStart ) {
-		edgeLateralPosition = edgeLateralStart;
-	} else {
-		edgeLateralPosition = edgeLateralEnd;
-	}
-
-	return Math.sqrt(
-		( pointLateralPosition - edgeLateralPosition ) ** 2 +
-			( pointForwardPosition - edgeForwardPosition ) ** 2
-	);
-}
-
-function getDistanceToNearestEdge(
-	point,
-	rect,
-	allowedEdges = [ 'top', 'bottom', 'left', 'right' ]
-) {
-	let candidateDistance;
-	let candidateEdge;
-
-	allowedEdges.forEach( ( edge ) => {
-		const distance = getDistanceFromPointToEdge( point, rect, edge );
-
-		if ( candidateDistance === undefined || distance < candidateDistance ) {
-			candidateDistance = distance;
-			candidateEdge = edge;
-		}
-	} );
-
-	return [ candidateDistance, candidateEdge ];
-}
-
 /**
  * Given a list of block DOM elements finds the index that a block should be dropped
  * at.
  *
- * This function works for both horizontal and vertical block lists and uses the following
- * terms for its variables:
- *
- * - Lateral, meaning the axis running horizontally when a block list is vertical and vertically when a block list is horizontal.
- * - Forward, meaning the axis running vertically when a block list is vertical and horizontally
- * when a block list is horizontal.
- *
- *
  * @param {Element[]}              elements    Array of DOM elements that represent each block in a block list.
- * @param {WPBlockDragPosition}    position    The position of the item being dragged.
+ * @param {WPPoint}                position    The position of the item being dragged.
  * @param {WPBlockListOrientation} orientation The orientation of a block list.
  *
  * @return {number|undefined} The block index that's closest to the drag position.
