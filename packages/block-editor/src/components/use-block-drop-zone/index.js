@@ -24,6 +24,53 @@ import useOnBlockDrop from './use-on-block-drop';
  * @typedef {'horizontal'|'vertical'|undefined} WPBlockListOrientation
  */
 
+function getDistanceFromPointToEdge( point, rect, edge ) {
+	const isHorizontal = edge === 'left' || edge === 'right';
+	const { x, y } = point;
+	const pointLateralPosition = isHorizontal ? y : x;
+	const pointForwardPosition = isHorizontal ? x : y;
+	const edgeLateralStart = isHorizontal ? rect.top : rect.left;
+	const edgeLateralEnd = isHorizontal ? rect.bottom : rect.right;
+	const edgeForwardPosition = rect[ edge ];
+
+	let edgeLateralPosition;
+	if (
+		pointLateralPosition >= edgeLateralStart &&
+		pointLateralPosition <= edgeLateralEnd
+	) {
+		edgeLateralPosition = pointLateralPosition;
+	} else if ( pointLateralPosition < edgeLateralStart ) {
+		edgeLateralPosition = edgeLateralStart;
+	} else {
+		edgeLateralPosition = edgeLateralEnd;
+	}
+
+	return Math.sqrt(
+		( pointLateralPosition - edgeLateralPosition ) ** 2 +
+			( pointForwardPosition - edgeForwardPosition ) ** 2
+	);
+}
+
+function getDistanceToNearestEdge(
+	point,
+	rect,
+	allowedEdges = [ 'top', 'bottom', 'left', 'right' ]
+) {
+	let candidateDistance;
+	let candidateEdge;
+
+	allowedEdges.forEach( ( edge ) => {
+		const distance = getDistanceFromPointToEdge( point, rect, edge );
+
+		if ( candidateDistance === undefined || distance < candidateDistance ) {
+			candidateDistance = distance;
+			candidateEdge = edge;
+		}
+	} );
+
+	return [ candidateDistance, candidateEdge ];
+}
+
 /**
  * Given a list of block DOM elements finds the index that a block should be dropped
  * at.
@@ -43,8 +90,10 @@ import useOnBlockDrop from './use-on-block-drop';
  * @return {number|undefined} The block index that's closest to the drag position.
  */
 export function getNearestBlockIndex( elements, position, orientation ) {
-	const { x, y } = position;
-	const isHorizontal = orientation === 'horizontal';
+	const allowedEdges =
+		orientation === 'horizontal'
+			? [ 'left', 'right' ]
+			: [ 'top', 'bottom' ];
 
 	let candidateIndex;
 	let candidateDistance;
@@ -56,70 +105,30 @@ export function getNearestBlockIndex( elements, position, orientation ) {
 		}
 
 		const rect = element.getBoundingClientRect();
-		const cursorLateralPosition = isHorizontal ? y : x;
-		const cursorForwardPosition = isHorizontal ? x : y;
-		const edgeLateralStart = isHorizontal ? rect.top : rect.left;
-		const edgeLateralEnd = isHorizontal ? rect.bottom : rect.right;
-
-		// When the cursor position is within the lateral bounds of the block,
-		// measure the straight line distance to the nearest point on the
-		// block's edge, else measure diagonal distance to the nearest corner.
-		let edgeLateralPosition;
-		if (
-			cursorLateralPosition >= edgeLateralStart &&
-			cursorLateralPosition <= edgeLateralEnd
-		) {
-			edgeLateralPosition = cursorLateralPosition;
-		} else if ( cursorLateralPosition < edgeLateralStart ) {
-			edgeLateralPosition = edgeLateralStart;
-		} else {
-			edgeLateralPosition = edgeLateralEnd;
-		}
-		const leadingEdgeForwardPosition = isHorizontal ? rect.left : rect.top;
-		const trailingEdgeForwardPosition = isHorizontal
-			? rect.right
-			: rect.bottom;
-
-		// First measure the distance to the leading edge of the block.
-		const leadingEdgeDistance = Math.sqrt(
-			( cursorLateralPosition - edgeLateralPosition ) ** 2 +
-				( cursorForwardPosition - leadingEdgeForwardPosition ) ** 2
+		const [ distance, edge ] = getDistanceToNearestEdge(
+			position,
+			rect,
+			allowedEdges
 		);
 
-		// If no candidate has been assigned yet or this is the nearest
-		// block edge to the cursor, then assign it as the candidate.
-		if (
-			candidateDistance === undefined ||
-			Math.abs( leadingEdgeDistance ) < candidateDistance
-		) {
-			candidateDistance = leadingEdgeDistance;
-			candidateIndex = index;
-		}
+		if ( candidateDistance === undefined || distance < candidateDistance ) {
+			// If the user is dropping to the trailing edge of the block
+			// add 1 to the index to represent dragging after.
+			const isTrailingEdge = edge === 'bottom' || edge === 'right';
+			let offset = isTrailingEdge ? 1 : 0;
 
-		// Next measure the distance to the trailing edge of the block.
-		const trailingEdgeDistance = Math.sqrt(
-			( cursorLateralPosition - edgeLateralPosition ) ** 2 +
-				( cursorForwardPosition - trailingEdgeForwardPosition ) ** 2
-		);
-
-		// If no candidate has been assigned yet or this is the nearest
-		// block edge to the cursor, then assign the next block as the candidate.
-		if ( Math.abs( trailingEdgeDistance ) < candidateDistance ) {
-			candidateDistance = trailingEdgeDistance;
-			let nextBlockOffset = 1;
-
-			// If the next block is the one being dragged, skip it and consider
-			// the block afterwards the drop target. This is needed as the
-			// block being dragged is set to display: none and won't display
-			// any drop target styling.
-			if (
+			// If the target is the dragged block itself and another 1 to
+			// index as the dragged block is set to `display: none` and
+			// should be skipped in the calculation.
+			const isTargetDraggedBlock =
+				isTrailingEdge &&
 				elements[ index + 1 ] &&
-				elements[ index + 1 ].classList.contains( 'is-dragging' )
-			) {
-				nextBlockOffset = 2;
-			}
+				elements[ index + 1 ].classList.contains( 'is-dragging' );
+			offset += isTargetDraggedBlock ? 1 : 0;
 
-			candidateIndex = index + nextBlockOffset;
+			// Update the currently known best candidate.
+			candidateDistance = distance;
+			candidateIndex = index + offset;
 		}
 	} );
 
