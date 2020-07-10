@@ -58,6 +58,40 @@ _Returns_
 Object grouping `focusable` and `tabbable` utils
 under the keys with the same name.
 
+<a name="getDistanceFromPointToEdge" href="#getDistanceFromPointToEdge">#</a> **getDistanceFromPointToEdge**
+
+Given a point, a DOM Rect and the name of an edge, returns the distance to
+that edge of the rect.
+
+This function works for edges that are horizontal or vertical, the following
+terms are used so that the function works in both orientations:
+
+-   Lateral, meaning the axis running horizontally when an edge is vertical
+    and vertically when an edge is horizontal.
+-   Forward, meaning the axis running vertically when an edge is vertical
+    and horizontally when an edge is horizontal.
+
+_Parameters_
+
+-   _point_ `WPPoint`: The point to measure distance from.
+-   _rect_ `DOMRect`: A DOM Rect containing edge positions.
+-   _edge_ `WPEdgeName`: The edge to measure to.
+
+<a name="getDistanceToNearestEdge" href="#getDistanceToNearestEdge">#</a> **getDistanceToNearestEdge**
+
+Given a point, a DOMRect and a list of allowed edges returns the name of and
+distance to the nearest edge.
+
+_Parameters_
+
+-   _point_ `WPPoint`: The point to measure distance from.
+-   _rect_ `DOMRect`: A DOM Rect containing edge positions.
+-   _allowedEdges_ `Array<WPEdgeName>`: A list of the edges included in the calculation. Defaults to all edges.
+
+_Returns_
+
+-   `(number|string)`: An array where the first value is the distance and a second is the edge name.
+
 <a name="getOffsetParent" href="#getOffsetParent">#</a> **getOffsetParent**
 
 Returns the closest positioned element, or null under any of the conditions
