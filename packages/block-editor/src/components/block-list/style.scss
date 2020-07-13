@@ -526,6 +526,11 @@
 	border-radius: $radius-block-ui;
 	background-color: $white;
 
+	// Adjust positioning when parent selector button is available
+	&.has-parent-selector {
+		margin-left: $grid-unit-60 + $grid-unit-15;
+	}
+
 	.block-editor-block-toolbar .components-toolbar-group,
 	.block-editor-block-toolbar .components-toolbar,
 	.block-editor-block-toolbar__mover-switcher-container {

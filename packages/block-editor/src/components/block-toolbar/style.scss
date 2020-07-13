@@ -67,9 +67,26 @@
 }
 
 .block-editor-block-toolbar__block-parent-selector-wrapper {
-	// Hide the Parent button in Top Toolbar mode.
+	position: absolute;
+	left: -($grid-unit-60 + $grid-unit-15);
+	width: $grid-unit-60;
+	height: $grid-unit-60;
+	border-radius: $radius-block-ui;
+
+	// Extra specificity to override toolbar or toolbar group styles.
+	&.block-editor-block-toolbar__block-parent-selector-wrapper {
+		background-color: $white;
+		border: $border-width solid $gray-900;
+	}
+
+	// Hide the parent selector button in Top Toolbar mode.
 	.edit-post-header-toolbar__block-toolbar & {
 		display: none;
+	}
+
+	.block-editor-block-parent-selector {
+		margin-top: -1px;
+		margin-left: -1px;
 	}
 }
 
