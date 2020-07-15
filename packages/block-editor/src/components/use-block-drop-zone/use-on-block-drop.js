@@ -45,8 +45,8 @@ export default function useOnBlockDrop( targetRootClientId, targetBlockIndex ) {
 			} = select( 'core/block-editor' );
 
 			return {
-				_getBlockIndex,
-				_getClientIdsOfDescendants,
+				getBlockIndex: _getBlockIndex,
+				getClientIdsOfDescendants: _getClientIdsOfDescendants,
 			};
 		},
 		[]
@@ -66,7 +66,10 @@ export default function useOnBlockDrop( targetRootClientId, targetBlockIndex ) {
 			return;
 		}
 
-		const sourceBlockIndex = getBlockIndex( sourceClientIds[ 0 ] );
+		const sourceBlockIndex = getBlockIndex(
+			sourceClientIds[ 0 ],
+			sourceRootClientId
+		);
 
 		// If the user is dropping to the same position, return early.
 		if (
