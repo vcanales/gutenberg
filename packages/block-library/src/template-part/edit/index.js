@@ -3,12 +3,12 @@
  */
 import { useRef, useEffect } from '@wordpress/element';
 import { useSelect, useDispatch } from '@wordpress/data';
-import { EntityProvider } from '@wordpress/core-data';
 
 /**
  * Internal dependencies
  */
 import useTemplatePartPost from './use-template-part-post';
+import TemplatePartNamePanel from './name-panel';
 import TemplatePartInnerBlocks from './inner-blocks';
 import TemplatePartPlaceholder from './placeholder';
 
@@ -16,6 +16,7 @@ export default function TemplatePartEdit( {
 	attributes: { postId: _postId, slug, theme },
 	setAttributes,
 	clientId,
+	isSelected,
 } ) {
 	const initialPostId = useRef( _postId );
 	const initialSlug = useRef( slug );
@@ -28,18 +29,18 @@ export default function TemplatePartEdit( {
 	// but wait until the third inner blocks change,
 	// because the first 2 are just the template part
 	// content loading.
-	const { innerBlocks, isSelected } = useSelect(
+	const { innerBlocks, hasSelectedInnerBlock } = useSelect(
 		( select ) => {
 			const {
 				getBlocks,
-				hasSelectedInnerBlock,
-				isBlockSelected,
+				hasSelectedInnerBlock: getHasSelectedInnerBlock,
 			} = select( 'core/block-editor' );
 			return {
 				innerBlocks: getBlocks( clientId ),
-				isSelected:
-					hasSelectedInnerBlock( clientId, true ) ||
-					isBlockSelected( clientId ),
+				hasSelectedInnerBlock: getHasSelectedInnerBlock(
+					clientId,
+					true
+				),
 			};
 		},
 		[ clientId ]
@@ -68,16 +69,21 @@ export default function TemplatePartEdit( {
 		return (
 			<div
 				className={
-					isSelected ? 'wp-block-template-part__selected' : null
+					isSelected || hasSelectedInnerBlock
+						? 'wp-block-template-part__selected'
+						: null
 				}
 			>
-				<EntityProvider
-					kind="postType"
-					type="wp_template_part"
-					id={ postId }
-				>
-					<TemplatePartInnerBlocks />
-				</EntityProvider>
+				{ ( isSelected || hasSelectedInnerBlock ) && (
+					<TemplatePartNamePanel
+						postId={ postId }
+						setAttributes={ setAttributes }
+					/>
+				) }
+				<TemplatePartInnerBlocks
+					postId={ postId }
+					hasInnerBlocks={ innerBlocks.length > 0 }
+				/>
 			</div>
 		);
 	}

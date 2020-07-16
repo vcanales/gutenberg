@@ -264,7 +264,7 @@ const getAutoCompleterUI = ( autocompleter ) => {
 									'is-selected': index === selectedIndex,
 								}
 							) }
-							onClick={ () => onSelect }
+							onClick={ () => onSelect( option ) }
 						>
 							{ option.label }
 						</Button>
@@ -409,7 +409,7 @@ export class Autocomplete extends Component {
 				break;
 
 			case ESCAPE:
-				this.setState( { autocompleter: null } );
+				this.setState( { autocompleter: null, AutocompleterUI: null } );
 				break;
 
 			case ENTER:
@@ -428,6 +428,7 @@ export class Autocomplete extends Component {
 		// Any handled keycode should prevent original behavior. This relies on
 		// the early return in the default case.
 		event.preventDefault();
+		event.stopPropagation();
 	}
 
 	componentDidUpdate( prevProps ) {
@@ -525,7 +526,7 @@ export class Autocomplete extends Component {
 						listBoxId={ listBoxId }
 						selectedIndex={ selectedIndex }
 						onChangeOptions={ this.onChangeOptions }
-						onSelect={ this.onSelect }
+						onSelect={ this.select }
 						onReset={ this.onReset }
 					/>
 				) }

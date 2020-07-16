@@ -25,7 +25,6 @@ import { serialize } from '@wordpress/blocks';
 import BlockActions from '../block-actions';
 import BlockModeToggle from './block-mode-toggle';
 import BlockHTMLConvertButton from './block-html-convert-button';
-import BlockUnknownConvertButton from './block-unknown-convert-button';
 import __experimentalBlockSettingsMenuFirstItem from './block-settings-menu-first-item';
 import BlockSettingsMenuControls from '../block-settings-menu-controls';
 
@@ -89,6 +88,7 @@ export function BlockSettingsDropdown( {
 				onInsertBefore,
 				onRemove,
 				onCopy,
+				onMoveTo,
 				blocks,
 			} ) => (
 				<DropdownMenu
@@ -105,11 +105,6 @@ export function BlockSettingsDropdown( {
 								<__experimentalBlockSettingsMenuFirstItem.Slot
 									fillProps={ { onClose } }
 								/>
-								{ count === 1 && (
-									<BlockUnknownConvertButton
-										clientId={ firstBlockClientId }
-									/>
-								) }
 								{ count === 1 && (
 									<BlockHTMLConvertButton
 										clientId={ firstBlockClientId }
@@ -156,6 +151,13 @@ export function BlockSettingsDropdown( {
 											{ __( 'Insert After' ) }
 										</MenuItem>
 									</>
+								) }
+								{ ! isLocked && (
+									<MenuItem
+										onClick={ flow( onClose, onMoveTo ) }
+									>
+										{ __( 'Move To' ) }
+									</MenuItem>
 								) }
 								{ count === 1 && (
 									<BlockModeToggle
