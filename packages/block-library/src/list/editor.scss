@@ -1,0 +1,7 @@
+// Extra specificity required to override default editor styles, which are
+// loaded after the core block styles (which may be a bug). If the load order
+// changes, this rule can be removed.
+ol.has-background.has-background,
+ul.has-background.has-background {
+	padding: $block-bg-padding--v $block-bg-padding--h;
+}
