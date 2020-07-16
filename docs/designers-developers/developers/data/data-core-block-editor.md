@@ -363,6 +363,18 @@ _Returns_
 
 -   `Array`: ids of top-level and descendant blocks.
 
+<a name="getDraggedBlockClientIds" href="#getDraggedBlockClientIds">#</a> **getDraggedBlockClientIds**
+
+Returns the dragged block client ids.
+
+_Parameters_
+
+-   _state_ `Object`: Global application state.
+
+_Returns_
+
+-   `boolean`: Whether user is dragging blocks.
+
 <a name="getFirstMultiSelectedBlockClientId" href="#getFirstMultiSelectedBlockClientId">#</a> **getFirstMultiSelectedBlockClientId**
 
 Returns the client ID of the first block in the multi-selection set, or null
@@ -1340,6 +1352,10 @@ _Returns_
 <a name="startDraggingBlocks" href="#startDraggingBlocks">#</a> **startDraggingBlocks**
 
 Returns an action object used in signalling that the user has begun to drag blocks.
+
+_Parameters_
+
+-   _clientIds_ `Array<string>`: An array of client ids being dragged
 
 _Returns_
 
