@@ -1,15 +1,15 @@
 /**
  * External dependencies
  */
-import { find, get, includes, union } from 'lodash';
+import { union } from 'lodash';
 
 /**
  * WordPress dependencies
  */
-import { __ } from '@wordpress/i18n';
 import { Button, SelectControl } from '@wordpress/components';
-import { withSelect, withDispatch } from '@wordpress/data';
-import { withInstanceId, compose } from '@wordpress/compose';
+import { useInstanceId } from '@wordpress/compose';
+import { useDispatch, useSelect } from '@wordpress/data';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -29,23 +29,66 @@ export const POST_FORMATS = [
 	{ id: 'chat', caption: __( 'Chat' ) },
 ];
 
-function PostFormat( {
-	onUpdatePostFormat,
-	postFormat = 'standard',
-	supportedFormats,
-	suggestedFormat,
-	instanceId,
-} ) {
-	const postFormatSelectorId = 'post-format-selector-' + instanceId;
-	const formats = POST_FORMATS.filter( ( format ) =>
-		includes( supportedFormats, format.id )
-	);
-	const suggestion = find(
-		formats,
-		( format ) => format.id === suggestedFormat
+export const POST_FORMAT_TITLES = {
+	aside: __( 'Aside' ),
+	audio: __( 'Audio' ),
+	chat: __( 'Chat' ),
+	gallery: __( 'Gallery' ),
+	image: __( 'Image' ),
+	link: __( 'Link' ),
+	quote: __( 'Quote' ),
+	standard: __( 'Standard' ),
+	status: __( 'Status' ),
+	video: __( 'Video' ),
+};
+
+export default function PostFormat() {
+	const instanceId = useInstanceId( PostFormat );
+	const postFormatSelectorId = `post-format-selector-${ instanceId }`;
+
+	const { postFormat, suggestedFormat, supportedFormats } = useSelect(
+		( select ) => {
+			const themeSupportedFormats =
+				select( 'core' ).getThemeSupports().formats ?? [];
+			const { getEditedPostAttribute, getSuggestedPostFormat } = select(
+				'core/editor'
+			);
+			const _postFormat = getEditedPostAttribute( 'format' );
+
+			// Ensure current format is always in the set.
+			// The current format may not be a format supported by the theme.
+			const _supportedFormats = union(
+				[ _postFormat ],
+				themeSupportedFormats
+			);
+
+			// The suggested format may not be supported by the theme, so we have
+			// to check to make sure.
+			const potentialSuggestedFormat = getSuggestedPostFormat();
+
+			let supportedSuggestedFormat = null;
+
+			if (
+				potentialSuggestedFormat &&
+				_supportedFormats.includes( potentialSuggestedFormat )
+			) {
+				supportedSuggestedFormat = potentialSuggestedFormat;
+			}
+
+			return {
+				postFormat: _postFormat ?? 'standard',
+				supportedFormats: _supportedFormats,
+				suggestedFormat: supportedSuggestedFormat,
+			};
+		},
+		[]
 	);
 
-	// Disable reason: We need to change the value immiediately to show/hide the suggestion if needed
+	const { editPost } = useDispatch( 'core/editor' );
+
+	function updatePostFormat( format ) {
+		editPost( { format } );
+	}
 
 	return (
 		<PostFormatCheck>
@@ -56,25 +99,25 @@ function PostFormat( {
 					</label>
 					<SelectControl
 						value={ postFormat }
-						onChange={ ( format ) => onUpdatePostFormat( format ) }
+						onChange={ ( format ) => updatePostFormat( format ) }
 						id={ postFormatSelectorId }
-						options={ formats.map( ( format ) => ( {
-							label: format.caption,
-							value: format.id,
+						options={ supportedFormats.map( ( format ) => ( {
+							label: POST_FORMAT_TITLES[ format ],
+							value: format,
 						} ) ) }
 					/>
 				</div>
 
-				{ suggestion && suggestion.id !== postFormat && (
+				{ suggestedFormat && suggestedFormat !== postFormat && (
 					<div className="editor-post-format__suggestion">
 						{ __( 'Suggestion:' ) }{ ' ' }
 						<Button
 							isLink
 							onClick={ () =>
-								onUpdatePostFormat( suggestion.id )
+								updatePostFormat( suggestedFormat )
 							}
 						>
-							{ suggestion.caption }
+							{ POST_FORMAT_TITLES[ suggestedFormat ] }
 						</Button>
 					</div>
 				) }
@@ -82,30 +125,3 @@ function PostFormat( {
 		</PostFormatCheck>
 	);
 }
-
-export default compose( [
-	withSelect( ( select ) => {
-		const { getEditedPostAttribute, getSuggestedPostFormat } = select(
-			'core/editor'
-		);
-		const postFormat = getEditedPostAttribute( 'format' );
-		const themeSupports = select( 'core' ).getThemeSupports();
-		// Ensure current format is always in the set.
-		// The current format may not be a format supported by the theme.
-		const supportedFormats = union(
-			[ postFormat ],
-			get( themeSupports, [ 'formats' ], [] )
-		);
-		return {
-			postFormat,
-			supportedFormats,
-			suggestedFormat: getSuggestedPostFormat(),
-		};
-	} ),
-	withDispatch( ( dispatch ) => ( {
-		onUpdatePostFormat( postFormat ) {
-			dispatch( 'core/editor' ).editPost( { format: postFormat } );
-		},
-	} ) ),
-	withInstanceId,
-] )( PostFormat );
