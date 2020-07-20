@@ -1,7 +1,7 @@
 /**
  * WordPress dependencies
  */
-import { RichText } from '@wordpress/block-editor';
+import { RichText, InnerBlocks } from '@wordpress/block-editor';
 
 /**
  * Internal dependencies
@@ -23,51 +23,8 @@ export default function save( { attributes } ) {
 				imageCrop ? 'is-cropped' : ''
 			}` }
 		>
-			<ul className="blocks-gallery-grid">
-				{ images.map( ( image ) => {
-					let href;
+			<InnerBlocks.Content />
 
-					switch ( linkTo ) {
-						case 'media':
-							href = image.fullUrl || image.url;
-							break;
-						case 'attachment':
-							href = image.link;
-							break;
-					}
-
-					const img = (
-						<img
-							src={ image.url }
-							alt={ image.alt }
-							data-id={ image.id }
-							data-full-url={ image.fullUrl }
-							data-link={ image.link }
-							className={
-								image.id ? `wp-image-${ image.id }` : null
-							}
-						/>
-					);
-
-					return (
-						<li
-							key={ image.id || image.url }
-							className="blocks-gallery-item"
-						>
-							<figure>
-								{ href ? <a href={ href }>{ img }</a> : img }
-								{ ! RichText.isEmpty( image.caption ) && (
-									<RichText.Content
-										tagName="figcaption"
-										className="blocks-gallery-item__caption"
-										value={ image.caption }
-									/>
-								) }
-							</figure>
-						</li>
-					);
-				} ) }
-			</ul>
 			{ ! RichText.isEmpty( caption ) && (
 				<RichText.Content
 					tagName="figcaption"
