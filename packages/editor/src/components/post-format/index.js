@@ -16,19 +16,6 @@ import { __ } from '@wordpress/i18n';
  */
 import PostFormatCheck from './check';
 
-export const POST_FORMATS = [
-	{ id: 'aside', caption: __( 'Aside' ) },
-	{ id: 'gallery', caption: __( 'Gallery' ) },
-	{ id: 'link', caption: __( 'Link' ) },
-	{ id: 'image', caption: __( 'Image' ) },
-	{ id: 'quote', caption: __( 'Quote' ) },
-	{ id: 'standard', caption: __( 'Standard' ) },
-	{ id: 'status', caption: __( 'Status' ) },
-	{ id: 'video', caption: __( 'Video' ) },
-	{ id: 'audio', caption: __( 'Audio' ) },
-	{ id: 'chat', caption: __( 'Chat' ) },
-];
-
 export const POST_FORMAT_TITLES = {
 	aside: __( 'Aside' ),
 	audio: __( 'Audio' ),
