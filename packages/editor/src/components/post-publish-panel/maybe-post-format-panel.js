@@ -10,12 +10,8 @@ import { Button, PanelBody } from '@wordpress/components';
  */
 import { POST_FORMAT_TITLES } from '../post-format';
 
-const PostFormatSuggestion = ( {
-	suggestedPostFormat,
-	suggestionText,
-	onUpdatePostFormat,
-} ) => (
-	<Button isLink onClick={ () => onUpdatePostFormat( suggestedPostFormat ) }>
+const PostFormatSuggestion = ( { onApplySuggestion, suggestionText } ) => (
+	<Button isLink onClick={ onApplySuggestion }>
 		{ suggestionText }
 	</Button>
 );
@@ -48,10 +44,6 @@ export default function PostFormatPanel() {
 		return null;
 	}
 
-	function updatePostFormat( format ) {
-		editPost( { format } );
-	}
-
 	return (
 		<PanelBody
 			initialOpen={ false }
@@ -71,8 +63,9 @@ export default function PostFormatPanel() {
 			</p>
 			<p>
 				<PostFormatSuggestion
-					onUpdatePostFormat={ updatePostFormat }
-					suggestedPostFormat={ suggestedFormat }
+					onApplySuggestion={ () => {
+						editPost( { format: suggestedFormat } );
+					} }
 					suggestionText={ sprintf(
 						/* translators: %s: post format */
 						__( 'Apply the "%1$s" format.' ),
