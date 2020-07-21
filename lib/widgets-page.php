@@ -12,7 +12,7 @@
  *
  * @param string $page The page name the function is being called for, `'gutenberg_customizer'` for the Customizer.
  */
-function the_gutenberg_widgets( $page = 'gutenberg_page_gutenberg-widgets' ) {
+function the_gutenberg_widgets( $page = 'appearance_page_gutenberg-widgets' ) {
 	?>
 	<div
 		id="widgets-editor"
@@ -36,11 +36,11 @@ function the_gutenberg_widgets( $page = 'gutenberg_page_gutenberg-widgets' ) {
  * @param string $hook Page.
  */
 function gutenberg_widgets_init( $hook ) {
-	if ( 'gutenberg_page_gutenberg-widgets' !== $hook && 'gutenberg_customizer' !== $hook ) {
+	if ( 'appearance_page_gutenberg-widgets' !== $hook && 'gutenberg_customizer' !== $hook ) {
 			return;
 	}
 
-	$initializer_name = 'gutenberg_page_gutenberg-widgets' === $hook
+	$initializer_name = 'appearance_page_gutenberg-widgets' === $hook
 		? 'initialize'
 		: 'customizerInitialize';
 
