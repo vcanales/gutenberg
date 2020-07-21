@@ -27,7 +27,7 @@ export default function PostFormatPanel() {
 		const potentialSuggestedFormat = getSuggestedPostFormat();
 
 		// If the suggested format isn't null, isn't already applied, and is
-		// supported by the theme, return it.
+		// supported by the theme, return it. Otherwise, return null.
 		if (
 			potentialSuggestedFormat &&
 			potentialSuggestedFormat !== currentFormat &&

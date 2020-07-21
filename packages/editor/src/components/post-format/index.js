@@ -33,19 +33,20 @@ export default function PostFormat() {
 	const instanceId = useInstanceId( PostFormat );
 	const postFormatSelectorId = `post-format-selector-${ instanceId }`;
 
-	const { postFormat, suggestedFormat, supportedFormats } = useSelect(
+	const { currentFormat, suggestedFormat, supportedFormats } = useSelect(
 		( select ) => {
 			const themeSupportedFormats =
 				select( 'core' ).getThemeSupports().formats ?? [];
 			const { getEditedPostAttribute, getSuggestedPostFormat } = select(
 				'core/editor'
 			);
-			const _postFormat = getEditedPostAttribute( 'format' );
+			const _currentFormat =
+				getEditedPostAttribute( 'format' ) ?? 'standard';
 
 			// Ensure current format is always in the set.
 			// The current format may not be a format supported by the theme.
 			const _supportedFormats = union(
-				[ _postFormat ],
+				[ _currentFormat ],
 				themeSupportedFormats
 			);
 
@@ -53,17 +54,20 @@ export default function PostFormat() {
 			// to check to make sure.
 			const potentialSuggestedFormat = getSuggestedPostFormat();
 
+			// If the suggested format isn't null, isn't already applied, and is
+			// supported by the theme, return it. Otherwise, return null.
 			let supportedSuggestedFormat = null;
 
 			if (
 				potentialSuggestedFormat &&
+				potentialSuggestedFormat !== _currentFormat &&
 				_supportedFormats.includes( potentialSuggestedFormat )
 			) {
 				supportedSuggestedFormat = potentialSuggestedFormat;
 			}
 
 			return {
-				postFormat: _postFormat ?? 'standard',
+				currentFormat: _currentFormat,
 				supportedFormats: _supportedFormats,
 				suggestedFormat: supportedSuggestedFormat,
 			};
@@ -85,7 +89,7 @@ export default function PostFormat() {
 						{ __( 'Post Format' ) }
 					</label>
 					<SelectControl
-						value={ postFormat }
+						value={ currentFormat }
 						onChange={ ( format ) => updatePostFormat( format ) }
 						id={ postFormatSelectorId }
 						options={ supportedFormats.map( ( format ) => ( {
@@ -95,7 +99,7 @@ export default function PostFormat() {
 					/>
 				</div>
 
-				{ suggestedFormat && suggestedFormat !== postFormat && (
+				{ suggestedFormat && (
 					<div className="editor-post-format__suggestion">
 						{ __( 'Suggestion:' ) }{ ' ' }
 						<Button
