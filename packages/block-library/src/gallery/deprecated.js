@@ -100,6 +100,7 @@ const deprecated = [
 				caption,
 				linkTo,
 			} = attributes;
+
 			return (
 				<figure
 					className={ `columns-${ columns } ${
@@ -109,6 +110,7 @@ const deprecated = [
 					<ul className="blocks-gallery-grid">
 						{ images.map( ( image ) => {
 							let href;
+
 							switch ( linkTo ) {
 								case 'media':
 									href = image.fullUrl || image.url;
@@ -117,6 +119,7 @@ const deprecated = [
 									href = image.link;
 									break;
 							}
+
 							const img = (
 								<img
 									src={ image.url }
@@ -131,6 +134,7 @@ const deprecated = [
 									}
 								/>
 							);
+
 							return (
 								<li
 									key={ image.id || image.url }
@@ -242,6 +246,7 @@ const deprecated = [
 				>
 					{ images.map( ( image ) => {
 						let href;
+
 						switch ( linkTo ) {
 							case 'media':
 								href = image.fullUrl || image.url;
@@ -250,6 +255,7 @@ const deprecated = [
 								href = image.link;
 								break;
 						}
+
 						const img = (
 							<img
 								src={ image.url }
@@ -262,6 +268,7 @@ const deprecated = [
 								}
 							/>
 						);
+
 						return (
 							<li
 								key={ image.id || image.url }
@@ -379,6 +386,7 @@ const deprecated = [
 				>
 					{ images.map( ( image ) => {
 						let href;
+
 						switch ( linkTo ) {
 							case 'media':
 								href = image.url;
@@ -387,6 +395,7 @@ const deprecated = [
 								href = image.link;
 								break;
 						}
+
 						const img = (
 							<img
 								src={ image.url }
@@ -398,6 +407,7 @@ const deprecated = [
 								}
 							/>
 						);
+
 						return (
 							<li
 								key={ image.id || image.url }
@@ -483,6 +493,7 @@ const deprecated = [
 				<div className={ className }>
 					{ images.map( ( image ) => {
 						let href;
+
 						switch ( linkTo ) {
 							case 'media':
 								href = image.url;
@@ -491,6 +502,7 @@ const deprecated = [
 								href = image.link;
 								break;
 						}
+
 						const img = (
 							<img
 								src={ image.url }
@@ -498,6 +510,7 @@ const deprecated = [
 								data-id={ image.id }
 							/>
 						);
+
 						return (
 							<figure
 								key={ image.id || image.url }
