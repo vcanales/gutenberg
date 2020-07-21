@@ -21,32 +21,35 @@ const PostFormatSuggestion = ( {
 );
 
 export default function PostFormatPanel() {
-	const { currentFormat, suggestedFormat } = useSelect( ( select ) => {
+	const suggestedFormat = useSelect( ( select ) => {
 		const supportedFormats =
 			select( 'core' ).getThemeSupports().formats ?? [];
 		const { getEditedPostAttribute, getSuggestedPostFormat } = select(
 			'core/editor'
 		);
+		const currentFormat = getEditedPostAttribute( 'format' );
 		const potentialSuggestedFormat = getSuggestedPostFormat();
 
-		return {
-			currentFormat: getEditedPostAttribute( 'format' ),
-			suggestedFormat: supportedFormats.includes(
-				potentialSuggestedFormat
-			)
-				? potentialSuggestedFormat
-				: null,
-		};
+		// If the suggested format isn't null, isn't already applied, and is
+		// supported by the theme, return it.
+		if (
+			potentialSuggestedFormat &&
+			potentialSuggestedFormat !== currentFormat &&
+			supportedFormats.includes( potentialSuggestedFormat )
+		) {
+			return potentialSuggestedFormat;
+		}
+		return null;
 	}, [] );
 
 	const { editPost } = useDispatch( 'core/editor' );
 
-	function updatePostFormat( format ) {
-		editPost( { format } );
+	if ( ! suggestedFormat ) {
+		return null;
 	}
 
-	if ( ! suggestedFormat || suggestedFormat === currentFormat ) {
-		return null;
+	function updatePostFormat( format ) {
+		editPost( { format } );
 	}
 
 	return (
