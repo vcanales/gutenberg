@@ -76,6 +76,7 @@ export function ImageEdit( {
 	insertBlocksAfter,
 	noticeOperations,
 	onReplace,
+	context,
 } ) {
 	const {
 		url = '',
@@ -93,6 +94,16 @@ export function ImageEdit( {
 		const { getSettings } = select( 'core/block-editor' );
 		return getSettings().mediaUpload;
 	} );
+
+	const allowResize =
+		context[ 'gallery/imageSettings' ]?.allowResize !== undefined
+			? context[ 'gallery/imageSettings' ].allowResize
+			: true;
+
+	const allowAlign =
+		context[ 'gallery/imageSettings' ]?.allowAlign !== undefined
+			? context[ 'gallery/imageSettings' ].allowAlign
+			: true;
 
 	function onUploadError( message ) {
 		noticeOperations.removeAllNotices();
@@ -218,10 +229,12 @@ export function ImageEdit( {
 	const isExternal = isExternalImage( id, url );
 	const controls = (
 		<BlockControls>
-			<BlockAlignmentToolbar
-				value={ align }
-				onChange={ updateAlignment }
-			/>
+			{ allowAlign && (
+				<BlockAlignmentToolbar
+					value={ align }
+					onChange={ updateAlignment }
+				/>
+			) }
 		</BlockControls>
 	);
 	const src = isExternal ? url : undefined;
@@ -275,6 +288,7 @@ export function ImageEdit( {
 						onSelectURL={ onSelectURL }
 						onUploadError={ onUploadError }
 						containerRef={ ref }
+						allowResize={ allowResize }
 					/>
 				) }
 				{ mediaPlaceholder }
