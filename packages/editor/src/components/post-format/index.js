@@ -33,9 +33,9 @@ export default function PostFormat() {
 	const instanceId = useInstanceId( PostFormat );
 	const postFormatSelectorId = `post-format-selector-${ instanceId }`;
 
-	const { currentFormat, suggestedFormat, supportedFormats } = useSelect(
+	const { currentFormat, listedFormats, suggestedFormat } = useSelect(
 		( select ) => {
-			const themeSupportedFormats =
+			const supportedFormats =
 				select( 'core' ).getThemeSupports().formats ?? [];
 			const { getEditedPostAttribute, getSuggestedPostFormat } = select(
 				'core/editor'
@@ -43,33 +43,25 @@ export default function PostFormat() {
 			const _currentFormat =
 				getEditedPostAttribute( 'format' ) ?? 'standard';
 
-			// Ensure current format is always in the set.
-			// The current format may not be a format supported by the theme.
-			const _supportedFormats = union(
-				[ _currentFormat ],
-				themeSupportedFormats
-			);
-
-			// The suggested format may not be supported by the theme, so we have
-			// to check to make sure.
 			const potentialSuggestedFormat = getSuggestedPostFormat();
 
 			// If the suggested format isn't null, isn't already applied, and is
 			// supported by the theme, return it. Otherwise, return null.
-			let supportedSuggestedFormat = null;
-
-			if (
+			const suggestionIsValid =
 				potentialSuggestedFormat &&
 				potentialSuggestedFormat !== _currentFormat &&
-				_supportedFormats.includes( potentialSuggestedFormat )
-			) {
-				supportedSuggestedFormat = potentialSuggestedFormat;
-			}
+				supportedFormats.includes( potentialSuggestedFormat );
+
+			const _suggestedFormat = suggestionIsValid
+				? potentialSuggestedFormat
+				: null;
 
 			return {
 				currentFormat: _currentFormat,
-				supportedFormats: _supportedFormats,
-				suggestedFormat: supportedSuggestedFormat,
+				// The current format may not be supported by the theme.
+				// Ensure it is always shown in the select control.
+				listedFormats: union( [ _currentFormat ], supportedFormats ),
+				suggestedFormat: _suggestedFormat,
 			};
 		},
 		[]
@@ -92,7 +84,7 @@ export default function PostFormat() {
 						value={ currentFormat }
 						onChange={ ( format ) => updatePostFormat( format ) }
 						id={ postFormatSelectorId }
-						options={ supportedFormats.map( ( format ) => ( {
+						options={ listedFormats.map( ( format ) => ( {
 							label: POST_FORMAT_TITLES[ format ],
 							value: format,
 						} ) ) }
