@@ -18,20 +18,19 @@ const PostFormatSuggestion = ( { onApplySuggestion, suggestionText } ) => (
 
 export default function PostFormatPanel() {
 	const suggestedFormat = useSelect( ( select ) => {
-		const supportedFormats =
-			select( 'core' ).getThemeSupports().formats ?? [];
 		const { getEditedPostAttribute, getSuggestedPostFormat } = select(
 			'core/editor'
 		);
-		const currentFormat = getEditedPostAttribute( 'format' );
 		const potentialSuggestedFormat = getSuggestedPostFormat();
 
 		// If the suggested format isn't null, isn't already applied, and is
 		// supported by the theme, return it. Otherwise, return null.
 		if (
 			potentialSuggestedFormat &&
-			potentialSuggestedFormat !== currentFormat &&
-			supportedFormats.includes( potentialSuggestedFormat )
+			potentialSuggestedFormat !== getEditedPostAttribute( 'format' ) &&
+			( select( 'core' ).getThemeSupports().formats ?? [] ).includes(
+				potentialSuggestedFormat
+			)
 		) {
 			return potentialSuggestedFormat;
 		}
