@@ -172,14 +172,11 @@ function Editor() {
 										entityId={
 											settings.__experimentalGlobalStylesUserEntityId
 										}
-										globalContext={
-											settings.__experimentalGlobalStylesGlobalContext
-										}
 										baseStyles={
 											settings.__experimentalGlobalStylesBaseStyles
 										}
-										blockData={
-											settings.__experimentalGlobalStylesBlockData
+										contexts={
+											settings.__experimentalGlobalStylesContexts
 										}
 									>
 										<KeyboardShortcuts.Register />
