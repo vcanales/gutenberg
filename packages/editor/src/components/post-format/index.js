@@ -52,16 +52,14 @@ export default function PostFormat() {
 				potentialSuggestedFormat !== _currentFormat &&
 				supportedFormats.includes( potentialSuggestedFormat );
 
-			const _suggestedFormat = suggestionIsValid
-				? potentialSuggestedFormat
-				: null;
-
 			return {
 				currentFormat: _currentFormat,
 				// The current format may not be supported by the theme.
 				// Ensure it is always shown in the select control.
 				listedFormats: union( [ _currentFormat ], supportedFormats ),
-				suggestedFormat: _suggestedFormat,
+				suggestedFormat: suggestionIsValid
+					? potentialSuggestedFormat
+					: null,
 			};
 		},
 		[]
