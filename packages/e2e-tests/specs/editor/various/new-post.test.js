@@ -5,7 +5,15 @@ import {
 	activatePlugin,
 	createNewPost,
 	deactivatePlugin,
+	findSidebarPanelWithTitle,
 } from '@wordpress/e2e-test-utils';
+
+async function openSidebarPanel( label ) {
+	const panelToggle = await findSidebarPanelWithTitle( label );
+	if ( ( await panelToggle.getProperty( 'aria-expanded' ) ) === false ) {
+		await panelToggle.click();
+	}
+}
 
 describe( 'new editor state', () => {
 	beforeAll( async () => {
@@ -34,6 +42,8 @@ describe( 'new editor state', () => {
 		);
 		expect( postPreviewButton ).not.toBeNull();
 		// Should display the Post Formats UI.
+		openSidebarPanel( 'Post Format' );
+		await page.waitForSelector( '.editor-post-format' );
 		const postFormatsUi = await page.$( '.editor-post-format' );
 		expect( postFormatsUi ).not.toBeNull();
 	} );
