@@ -88,6 +88,7 @@ export function ImageEdit( {
 		width,
 		height,
 		sizeSlug,
+		isInGallery,
 	} = attributes;
 	const ref = useRef();
 	const mediaUpload = useSelect( ( select ) => {
@@ -268,6 +269,33 @@ export function ImageEdit( {
 	// Focussing the image caption after inserting an image relies on the
 	// component remounting. This needs to be fixed.
 	const key = !! url;
+
+	if ( isInGallery ) {
+		return (
+			<>
+				{ controls }
+				<Block.li ref={ ref } className={ classes } key={ key }>
+					<figure>
+						{ url && (
+							<Image
+								attributes={ attributes }
+								setAttributes={ setAttributes }
+								isSelected={ isSelected }
+								insertBlocksAfter={ insertBlocksAfter }
+								onReplace={ onReplace }
+								onSelectImage={ onSelectImage }
+								onSelectURL={ onSelectURL }
+								onUploadError={ onUploadError }
+								containerRef={ ref }
+								allowResize={ allowResize }
+							/>
+						) }
+						{ mediaPlaceholder }
+					</figure>
+				</Block.li>
+			</>
+		);
+	}
 
 	return (
 		<>
