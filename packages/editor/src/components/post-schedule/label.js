@@ -11,7 +11,8 @@ export function PostScheduleLabel( { date, isFloating } ) {
 	return date && ! isFloating
 		? dateI18n(
 				`${ settings.formats.date } ${ settings.formats.time }`,
-				date
+				date,
+				false
 		  )
 		: __( 'Immediately' );
 }

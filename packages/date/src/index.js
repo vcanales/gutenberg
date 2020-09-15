@@ -406,11 +406,9 @@ export function gmdate( dateFormat, dateValue = new Date() ) {
  *                                                See php.net/date.
  * @param {Date|string|Moment|null}    dateValue  Date object or string, parsable by
  *                                                moment.js.
- * @param {string|number|boolean|null} timezone   Timezone to output result in or a
- *                                                UTC offset. Defaults to timezone from
- *                                                site. Notice: `boolean` is effectively
- *                                                deprecated, but still supported for
- *                                                backward compatibility reasons.
+ * @param {string|number|boolean|null} timezone   Timezone or UTC offset to output the
+ *                                                result in, or false to avoid offsets.
+ *                                                Defaults to timezone from site.
  *
  * @see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
  * @see https://en.wikipedia.org/wiki/ISO_8601#Time_offsets_from_UTC
@@ -420,10 +418,6 @@ export function gmdate( dateFormat, dateValue = new Date() ) {
 export function dateI18n( dateFormat, dateValue = new Date(), timezone ) {
 	if ( true === timezone ) {
 		return gmdateI18n( dateFormat, dateValue );
-	}
-
-	if ( false === timezone ) {
-		timezone = undefined;
 	}
 
 	const dateMoment = buildMoment( dateValue, timezone );
@@ -480,11 +474,11 @@ export function getDate( dateString ) {
 /**
  * Creates a moment instance using the given timezone or, if none is provided, using global settings.
  *
- * @param {Date|string|Moment|null} dateValue Date object or string, parsable
- *                                            by moment.js.
- * @param {string|number|null}      timezone  Timezone to output result in or a
- *                                            UTC offset. Defaults to timezone from
- *                                            site.
+ * @param {Date|string|Moment|null}    dateValue Date object or string, parsable
+ *                                               by moment.js.
+ * @param {string|number|boolean|null} timezone  Timezone or UTC offset to output the
+ *                                               result in, or false to avoid offsets.
+ *                                               Defaults to timezone from site.
  *
  * @see https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
  * @see https://en.wikipedia.org/wiki/ISO_8601#Time_offsets_from_UTC
@@ -493,6 +487,10 @@ export function getDate( dateString ) {
  */
 function buildMoment( dateValue, timezone = '' ) {
 	const dateMoment = momentLib( dateValue );
+
+	if ( false === timezone ) {
+		return dateMoment;
+	}
 
 	if ( timezone && ! isUTCOffset( timezone ) ) {
 		return dateMoment.tz( timezone );

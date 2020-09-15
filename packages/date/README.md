@@ -51,7 +51,7 @@ _Parameters_
 
 -   _dateFormat_ `string`: PHP-style formatting string. See php.net/date.
 -   _dateValue_ `(Date|string|Moment|null)`: Date object or string, parsable by moment.js.
--   _timezone_ `(string|number|boolean|null)`: Timezone to output result in or a UTC offset. Defaults to timezone from site. Notice: `boolean` is effectively deprecated, but still supported for backward compatibility reasons.
+-   _timezone_ `(string|number|boolean|null)`: Timezone or UTC offset to output the result in, or false to avoid offsets. Defaults to timezone from site.
 
 _Returns_
 
